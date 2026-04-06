@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Map as MapIcon, FileText, Activity,
-  Bell, Settings, LogOut, Shield, User, Users, Route as RouteIcon, Brain, AlertTriangle
+  Bell, Settings, LogOut, Shield, User, Users, Route as RouteIcon, Brain, AlertTriangle, Fingerprint
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +21,7 @@ const Sidebar = () => {
     { icon: RouteIcon,     label: 'AI Patrol Routes',    path: '/patrol-routes' },
     { icon: Brain,         label: 'Crime Prediction',    path: '/crime-prediction', badge: 'ML' },
     { icon: Shield,        label: 'Risk Analysis',       path: '/risk-analysis', badge: 'NEW' },
+    { icon: Fingerprint,   label: 'Behavioral Analysis', path: '/behavioral-analysis', badge: 'AI' },
     { icon: Bell,          label: 'SOS Alerts',          path: '/alerts' },
   ];
 
@@ -38,6 +39,7 @@ const Sidebar = () => {
     { icon: AlertTriangle, label: 'Accident Monitor',    path: '/accident-monitoring', badge: 'IRAD' },
     { icon: MapIcon,       label: 'Hotspot Map',         path: '/hotspot-map' },
     { icon: Brain,         label: 'Crime Prediction',    path: '/crime-prediction', badge: 'ML' },
+    { icon: Fingerprint,   label: 'Behavioral Analysis', path: '/behavioral-analysis', badge: 'AI' },
     { icon: Bell,          label: 'SOS Alerts',          path: '/alerts' },
     { icon: FileText,      label: 'FIR Reports',         path: '/fir-management' },
     { icon: Settings,      label: 'Settings',            path: '/settings' },

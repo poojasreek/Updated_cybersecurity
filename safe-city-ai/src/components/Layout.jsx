@@ -127,6 +127,7 @@ const Layout = () => {
     if (path === '/admin') return 'Admin Control Panel';
     if (path === '/safety-map') return 'Citizen Safety Map';
     if (path === '/nearby-stations') return 'Nearby Police Stations & Directions';
+    if (path === '/behavioral-analysis') return 'Behavioral Intelligence & Risk';
     if (path === '/sos') return 'SOS Emergency';
     if (path === '/risk-analysis') return 'Risk Analysis & Dispatch';
     return 'SAFE-CITY AI';
