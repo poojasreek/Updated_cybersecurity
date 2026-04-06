@@ -174,5 +174,65 @@ export const offenderRecords = [
       { type: 'Support Group', desc: 'Mandatory attendance at community support groups.' },
       { type: 'Alternative Sentencing', desc: 'Suspended sentence contingent on clean drug tests.' }
     ]
+  },
+  {
+    id: 'OFF-4581',
+    name: 'Suresh Babu',
+    age: 42,
+    history: ['Burglary (2021)', 'Theft (2023)', 'Grand Theft (2025)'],
+    frequency: 'Consistent property crimes',
+    pattern: 'Targets residential areas during mid-day when occupants are usually at work.',
+    riskScore: 75,
+    riskLevel: 'High',
+    biasScore: 94,
+    recommendations: []
+  },
+  {
+    id: 'OFF-1102',
+    name: 'Pooja Nair',
+    age: 22,
+    history: ['Cyber Harassment (2026)', 'Stalking (2026)'],
+    frequency: 'Escalating rapidly',
+    pattern: 'Cyber offenses transitioning into physical proximity stalking (Women Safety).',
+    riskScore: 82,
+    riskLevel: 'High',
+    biasScore: 98,
+    recommendations: []
+  },
+  {
+    id: 'OFF-6729',
+    name: 'Karthik Raja',
+    age: 31,
+    history: ['DUI (2022)', 'Reckless Driving (2024)', 'Accident - Hit and Run (2025)'],
+    frequency: 'Consistent vehicular endangerment',
+    pattern: 'Late night driving offenses under the influence in suburban routes.',
+    riskScore: 91,
+    riskLevel: 'High',
+    biasScore: 95,
+    recommendations: []
+  },
+  {
+    id: 'OFF-8843',
+    name: 'Amina Sheikh',
+    age: 26,
+    history: ['Fraud (2024)', 'Identity Theft (2025)'],
+    frequency: 'Emerging financial crimes',
+    pattern: 'Sophisticated phishing and identity theft targeting elderly citizens.',
+    riskScore: 55,
+    riskLevel: 'Medium',
+    biasScore: 99,
+    recommendations: []
+  },
+  {
+    id: 'OFF-5091',
+    name: 'Ravi Teja',
+    age: 19,
+    history: ['Vandalism (2025)', 'Public Intoxication (2026)'],
+    frequency: 'Recent petty offenses',
+    pattern: 'Minor disruptions linked to peer group activities late at night.',
+    riskScore: 30,
+    riskLevel: 'Low',
+    biasScore: 97,
+    recommendations: []
   }
 ];
