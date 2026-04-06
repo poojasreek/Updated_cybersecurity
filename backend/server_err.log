@@ -1,0 +1,37 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\SANTHYA R\\Downloads\\cybersecurity_hackthon-main (1)\\cybersecurity_hackthon-main\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [11380] using StatReload
+INFO:     Started server process [31924]
+INFO:     Waiting for application startup.
+TRACE:    ASGI [1] Started scope={'type': 'lifespan', 'asgi': {'version': '3.0', 'spec_version': '2.0'}, 'state': {}}
+TRACE:    ASGI [1] Receive {'type': 'lifespan.startup'}
+TRACE:    ASGI [1] Send {'type': 'lifespan.startup.complete'}
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+TRACE:    ASGI [1] Receive {'type': 'lifespan.shutdown'}
+TRACE:    ASGI [1] Send {'type': 'lifespan.shutdown.complete'}
+TRACE:    ASGI [1] Completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [31924]
+INFO:     Started server process [34900]
+INFO:     Waiting for application startup.
+TRACE:    ASGI [1] Started scope={'type': 'lifespan', 'asgi': {'version': '3.0', 'spec_version': '2.0'}, 'state': {}}
+TRACE:    ASGI [1] Receive {'type': 'lifespan.startup'}
+TRACE:    ASGI [1] Send {'type': 'lifespan.startup.complete'}
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+TRACE:    ASGI [1] Receive {'type': 'lifespan.shutdown'}
+TRACE:    ASGI [1] Send {'type': 'lifespan.shutdown.complete'}
+TRACE:    ASGI [1] Completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [34900]
+INFO:     Started server process [30852]
+INFO:     Waiting for application startup.
+TRACE:    ASGI [1] Started scope={'type': 'lifespan', 'asgi': {'version': '3.0', 'spec_version': '2.0'}, 'state': {}}
+TRACE:    ASGI [1] Receive {'type': 'lifespan.startup'}
+TRACE:    ASGI [1] Send {'type': 'lifespan.startup.complete'}
+INFO:     Application startup complete.

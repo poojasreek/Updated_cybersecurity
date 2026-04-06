@@ -1,0 +1,128 @@
+💻 Tech Stack
+
+Frontend (Web App)
+
+React.js → main frontend framework
+Material-UI / Chakra UI → prebuilt buttons, tables, modals, cards
+Leaflet.js / Mapbox GL JS → interactive hexagon maps, safe routes
+Chart.js / Recharts → crime trend visualization
+jsPDF → export PDF reports
+
+Authentication & Security
+
+Firebase Auth → OTP + Email/password login
+JWT → secure sessions
+2FA → police only (Google Authenticator / Authy API)
+Blockchain (Polygon testnet) → store FIR/SOS hashes for immutability
+AWS S3 / Google Cloud Storage → store images/videos
+
+Backend
+
+FastAPI → REST APIs for auth, FIR, SOS, patrol
+Web3.py → communicate with blockchain
+Socket.io + FCM → real-time SOS alerts, patrol tracking
+PostgreSQL + PostGIS → structured + geospatial queries
+Redis (optional) → caching for high-frequency SOS events
+
+AI/ML (optional for risk scoring)
+
+Logistic Regression, Decision Trees / Random Forest, XGBoost / LightGBM
+SHAP → explainable AI for risk scores
+
+Deployment
+
+Frontend → Vercel / Netlify
+Backend → Railway / Render / Fly.io
+Database → Supabase / Railway PostgreSQL
+Blockchain → Polygon Mumbai testnet
+
+Notifications Module — Short & Sweet
+
+Event triggers alert (SOS / prediction / FIR update)
+System decides who should receive it
+Priority set:
+🔴 HIGH → SOS
+🟡 MEDIUM → alerts
+🟢 LOW → reports
+Message sent to queue (Redis Bull)
+Worker processes the queue
+For each user:
+Get device token (Firebase)
+Send push notification (FCM)
+Optional:
+SMS → Twilio
+Email → SendGrid
+Retry 3 times if failed
+Save notification in DB (history)
+Fallback: If push fails → send SMS (for SOS)
+
+MODULE 4: Patrol Route Generator*
+
+*Purpose:* Tell police where to patrol
+
+*Workflow:*
+- Reads predicted hotspots from Module 2
+- Gets list of available officers on duty
+- Gets shift timings (8PM-4AM, etc.)
+- Uses Reinforcement Learning agent (PPO algorithm)
+- Agent calculates optimal route covering highest risk zones first
+- Generates route with timestamps: "Zone A from 8-10PM, Zone B from 10-12PM"
+- Saves routes to database with officer assignment
+- Sends route to officer's mobile app via WebSocket
+- Records actual patrol path (GPS) for future improvement
+- Updates route daily based on new predictions
+
+Patrol Route Generator — Short & Sweet
+Uses crime hotspots + officer data
+AI plans best patrol routes
+Covers high-risk areas first
+Assigns routes with time slots
+Sends route to police mobile 📱
+Tracks patrol using GPS
+Updates routes daily
+
+*MODULE 7: Citizen Backend*
+
+*Purpose:* Serve safety information to citizens
+
+*Workflow:*
+- User logs in with phone number → OTP sent → JWT token issued
+- App requests map data → Backend queries Module 3 → Returns danger zones
+- User requests safe route → Backend calculates safest path (avoids red/yellow zones)
+- User requests alerts → Backend checks Redis for active alerts in user's area
+- User reports crime → Backend validates and stores report
+- User adds emergency contacts → Backend stores in database
+- User enables guardian mode → Backend tracks location during set hours
+- All responses cached in Redis for faster delivery
+- Push notifications sent via Firebase Cloud Messaging
+
+🚓 Prompt: Patrol Route Generator
+
+Objective:
+Design an AI-based system that generates optimal patrol routes for police officers.
+
+Input:
+
+Predicted crime hotspots (from Module 2)
+List of available officers
+Shift timings (e.g., 8 PM – 4 AM)
+
+Process:
+
+Use a Reinforcement Learning model (PPO algorithm)
+Prioritize high-risk zones
+Optimize routes based on time and coverage
+
+Output:
+
+Patrol plan with time slots
+Example: Zone A (8–10 PM), Zone B (10–12 PM)
+Assign routes to specific officers
+
+Additional Requirements:
+
+Store routes in database
+Send routes to mobile app via WebSocket
+Track actual patrol using GPS
+Continuously improve routes using past data
+Update routes daily based on new predictions
