@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Map as MapIcon, FileText, Activity,
-  Bell, Settings, LogOut, Shield, User, Users, Route as RouteIcon, Brain, AlertTriangle, Fingerprint
+  Bell, Settings, LogOut, Shield, User, Users, Route as RouteIcon, Brain, AlertTriangle, Fingerprint, ShieldAlert
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -26,9 +26,9 @@ const Sidebar = () => {
   ];
 
   const citizenMenu = [
-    { icon: MapIcon,       label: 'Safety Map',         path: '/safety-map' },
-    { icon: Shield,        label: 'Nearby Stations',    path: '/nearby-stations', badge: 'GPS' },
-    { icon: Bell,          label: 'Alerts',             path: '/alerts' },
+    { icon: MapIcon,       label: 'Safety Map',          path: '/safety-map' },
+    { icon: RouteIcon,     label: 'Nearby Stations',     path: '/nearby-stations' },
+    { icon: ShieldAlert,   label: 'Report Crime',        path: '/report-crime' },
     { icon: AlertTriangle, label: 'SOS Emergency',      path: '/sos' },
     { icon: Settings,      label: 'Settings',           path: '/settings' },
   ];

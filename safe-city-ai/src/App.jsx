@@ -20,6 +20,7 @@ import SafetyMapPage from './pages/SafetyMapPage';
 import NearbyStationsPage from './pages/NearbyStationsPage';
 import BehavioralAnalysisPage from './pages/BehavioralAnalysisPage';
 import CrimeSearchPage from './pages/CrimeSearchPage';
+import ReportCrimePage from './pages/ReportCrimePage';
 import { SOSProvider } from './context/SOSContext';
 
 const AppContent = () => {
@@ -74,6 +75,9 @@ const AppContent = () => {
           {/* Citizen Routes */}
           <Route path="/safety-map" element={<SafetyMapPage />} />
           <Route path="/nearby-stations" element={<NearbyStationsPage />} />
+          <Route path="/report-crime" element={
+            user?.role === 'citizen' ? <ReportCrimePage /> : <Navigate to="/dashboard" replace />
+          } />
           <Route path="/sos" element={
             user?.role === 'citizen' ? <WomenSafetyPage /> : <Navigate to="/dashboard" replace />
           } />
