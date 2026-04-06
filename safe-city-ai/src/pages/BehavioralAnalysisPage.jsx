@@ -198,58 +198,7 @@ export default function BehavioralAnalysisPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Bottom Panel: Alternatives & Ethics */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
-            
-            {/* Recommendations */}
-            <div className="glass-panel" style={{ padding: '24px' }}>
-               <h3 style={{ fontSize: '1rem', fontWeight: '800', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <HeartHandshake size={20} color="#2ECC71"/> Recommended Interventions
-               </h3>
-               <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0 0 20px' }}>AI-suggested alternatives to traditional imprisonment</p>
-               
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {selectedOffender.recommendations.map((rec, i) => (
-                    <div key={i} style={{ background: 'rgba(46,204,113,0.06)', border: '1px solid rgba(46,204,113,0.2)', padding: '14px', borderRadius: '12px', display: 'flex', gap: '12px' }}>
-                      <div style={{ width: '8px', height: '8px', background: '#2ECC71', borderRadius: '50%', marginTop: '6px', flexShrink: 0 }} />
-                      <div>
-                        <p style={{ margin: '0 0 4px', fontWeight: '800', fontSize: '0.9rem', color: '#2ECC71' }}>{rec.type}</p>
-                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>{rec.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-               </div>
-            </div>
 
-            {/* Ethics & Fairness Assessment */}
-            <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-               <div>
-                 <h3 style={{ fontSize: '1rem', fontWeight: '800', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Scale size={20} color="#A855F7"/> Ethics Assessment
-                 </h3>
-                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Ensuring fairness & privacy</p>
-               </div>
-
-               <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(168,85,247,0.08)', borderRadius: '16px', border: '1px solid rgba(168,85,247,0.2)' }}>
-                  <p style={{ margin: '0 0 4px', fontSize: '0.7rem', fontWeight: '800', color: '#A855F7', letterSpacing: '1px' }}>ALGORITHMIC FAIRNESS</p>
-                  <h2 style={{ fontSize: '2.4rem', margin: 0, fontWeight: '900', color: '#A855F7' }}>{selectedOffender.biasScore}%</h2>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Bias-Free Prediction</p>
-               </div>
-
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                     <ShieldCheck size={16} color="#2ECC71"/> Demographic Data Blinded
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                     <ShieldCheck size={16} color="#2ECC71"/> Data Anonymized
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                     <ShieldCheck size={16} color="#2ECC71"/> Compliant with privacy laws
-                  </div>
-               </div>
-            </div>
-
-          </div>
 
         </div>
       </div>
