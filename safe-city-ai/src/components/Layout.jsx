@@ -22,7 +22,11 @@ const Layout = () => {
     if (path === '/analytics') return 'Surveillance Analytics';
     if (path === '/alerts') return 'SOS & Emergency Alerts';
     if (path === '/settings') return 'Settings & Preferences';
+    if (path === '/patrol-routes') return 'AI Patrol Route Generator';
+    if (path === '/crime-prediction') return 'Crime Prediction & Risk Intelligence';
+    if (path === '/accident-monitoring') return 'IRAD Accident Monitoring System';
     if (path === '/admin') return 'Admin Control Panel';
+
     if (path === '/safety-map') return 'Citizen Safety Map';
     return 'SAFE-CITY AI';
   };

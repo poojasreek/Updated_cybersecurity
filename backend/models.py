@@ -26,10 +26,17 @@ class FIR(Base):
     
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     status = Column(String, default="Open")
-    severity = Column(String)
-    description = Column(Text)
-    officer_name = Column(String)
-    branch_name = Column(String)
+    severity = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    officer_name = Column(String, nullable=True)
+    branch_name = Column(String, nullable=True)
+    
+    # Secure Ledger Fields (New Schema)
+    ipc_section = Column(String, nullable=True)
+    date_time = Column(String, nullable=True) # Incident timestamp as reported
+    police_station = Column(String, nullable=True)
+    statement_path = Column(String, nullable=True)
+    integrity_hash = Column(String, nullable=True) # SHA-256 for tamper-proofing
 
 class SOSAlert(Base):
     __tablename__ = "sos_alerts"

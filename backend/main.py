@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -41,6 +41,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Shared Secret for Hashing (should be env in prod)
+SECRET_SALT = "CRYPTO_SECURE_CITY_2024"
+UPLOAD_DIR = os.path.join(os.getcwd(), "uploads")
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
 
 # Auth Logic
 citizen_otp_store = {}
@@ -115,29 +120,47 @@ def verify_security(req: VerifyRequest, db: Session = Depends(get_db)):
 @app.get("/api/firs")
 def get_firs(db: Session = Depends(get_db)):
     firs = db.query(models.FIR).order_by(models.FIR.timestamp.desc()).all()
+    # Sanitize or add full URL for statement_path if needed
     return {"data": firs}
 
 @app.post("/api/firs")
-def create_fir(fir: FIRCreate, db: Session = Depends(get_db)):
-    # Standard location storage
+async def create_fir(
+    FIR_ID: str = Form(...),
+    Crime_Type: str = Form(...),
+    IPC_Section: str = Form(...),
+    Latitude: float = Form(...),
+    Longitude: float = Form(...),
+    Date_Time: str = Form(...),
+    Description: str = Form(...),
+    Police_Station: str = Form(...),
+    Statement_File: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    file_path = None
+    if Statement_File:
+        file_path = os.path.join(UPLOAD_DIR, f"{FIR_ID}_{Statement_File.filename}")
+        with open(file_path, "wb") as f:
+            content = await Statement_File.read()
+            f.write(content)
+            
+    # Create Tamper-Proof Integrity Hash (SHA-256)
+    record_payload = f"{FIR_ID}{Crime_Type}{IPC_Section}{Latitude}{Longitude}{Date_Time}{SECRET_SALT}"
+    integrity_hash = hashlib.sha256(record_payload.encode()).hexdigest()
+
     new_fir = models.FIR(
-        fir_id=f"FIR-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
-        crime_type=fir.crimeType,
-        location=fir.location,
-        description=fir.description,
-        severity=fir.severity,
-        officer_name=fir.officer,
-        branch_name=fir.branch,
-        lat=fir.lat or 13.0418,
-        lng=fir.lng or 80.2341,
+        fir_id=FIR_ID,
+        crime_type=Crime_Type,
+        ipc_section=IPC_Section,
+        lat=Latitude,
+        lng=Longitude,
+        date_time=Date_Time,
+        description=Description,
+        police_station=Police_Station,
+        statement_path=file_path,
+        integrity_hash=integrity_hash,
         status="Open"
     )
     
-    # Advanced PostGIS storage if available
-    if hasattr(models.FIR, 'geom') and fir.lat and fir.lng:
-        from geoalchemy2.elements import WKTElement
-        new_fir.geom = WKTElement(f'POINT({fir.lng} {fir.lat})', srid=4326)
-        
     db.add(new_fir)
     db.commit()
     db.refresh(new_fir)

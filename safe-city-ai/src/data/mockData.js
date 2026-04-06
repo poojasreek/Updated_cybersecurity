@@ -77,3 +77,30 @@ export const blockchainTransactions = [
 
 export const crimeTypes = ['All', 'Theft', 'Women Safety', 'Accident', 'NDPS', 'IPC'];
 export const statusTypes = ['All', 'Open', 'Under Investigation', 'Resolved'];
+
+// --- ACCIDENT MONITORING DATA (IRAD) ---
+export const accidentRecords = [
+  { id: 'ACC-2026-001', location: 'Anna Salai, Chennai', lat: 13.0633, lng: 80.2500, date: '2026-04-01', time: '08:45', severity: 'Fatal', cause: 'Over Speeding', weather: 'Clear', roadType: 'National Highway', vehicleType: 'HCV' },
+  { id: 'ACC-2026-002', location: 'Mount Road, Chennai', lat: 13.0233, lng: 80.2100, date: '2026-04-01', time: '13:20', severity: 'Grievous', cause: 'Drunk Driving', weather: 'Rainy', roadType: 'Urban Road', vehicleType: 'Two Wheeler' },
+  { id: 'ACC-2026-003', location: 'Koyambedu, Chennai', lat: 13.0733, lng: 80.1900, date: '2026-04-02', time: '19:10', severity: 'Minor', cause: 'Animal Crossing', weather: 'Foggy', roadType: 'State Highway', vehicleType: 'LMV' },
+  { id: 'ACC-2026-004', location: 'Perungudi, OMR', lat: 12.9633, lng: 80.2450, date: '2026-04-03', time: '23:45', severity: 'Fatal', cause: 'Distracted Driving', weather: 'Clear', roadType: 'Expressway', vehicleType: 'Four Wheeler' },
+  { id: 'ACC-2026-005', location: 'Tambaram, Chennai', lat: 12.9233, lng: 80.1100, date: '2026-04-03', time: '07:30', severity: 'Grievous', cause: 'Tire Burst', weather: 'Mist', roadType: 'National Highway', vehicleType: 'Bus' },
+];
+
+export const roadSafetyHotspots = [
+  { id: 'HOT-001', name: 'Kathipara Junction', lat: 13.0067, lng: 80.2206, riskScore: 92, status: 'High Risk', primaryCause: 'Merging Traffic' },
+  { id: 'HOT-002', name: 'Madhuravoyal Bypass', lat: 13.0450, lng: 80.1650, riskScore: 85, status: 'High Risk', primaryCause: 'Overspeeding' },
+  { id: 'HOT-003', name: 'Sholinganallur Signal', lat: 12.9010, lng: 80.2279, riskScore: 78, status: 'Moderate Risk', primaryCause: 'Signal Jumping' },
+];
+
+export const accidentStats = {
+  monthlyAccidents: [
+    { month: 'Jan', count: 45, fatal: 12 }, { month: 'Feb', count: 38, fatal: 8 },
+    { month: 'Mar', count: 52, fatal: 15 }, { month: 'Apr', count: 18, fatal: 4 },
+  ],
+  hourlyTrend: [
+    { hour: '00-04', count: 12 }, { hour: '04-08', count: 25 }, 
+    { hour: '08-12', count: 48 }, { hour: '12-16', count: 32 },
+    { hour: '16-20', count: 55 }, { hour: '20-00', count: 20 },
+  ],
+};

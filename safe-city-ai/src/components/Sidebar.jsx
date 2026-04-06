@@ -2,8 +2,9 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Map as MapIcon, FileText, Activity,
-  Bell, Settings, LogOut, Shield, User, Users, Route as RouteIcon
+  Bell, Settings, LogOut, Shield, User, Users, Route as RouteIcon, Brain, AlertTriangle
 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
@@ -12,10 +13,13 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const policeMenu = [
-    { icon: FileText, label: 'FIR Entry', path: '/fir-management' },
-    { icon: MapIcon, label: 'Hotspot Map', path: '/hotspot-map' },
-    { icon: RouteIcon, label: 'AI Patrol Routes', path: '/patrol-routes' },
+    { icon: FileText,      label: 'FIR Entry',          path: '/fir-management' },
+    { icon: MapIcon,       label: 'Hotspot Map',         path: '/hotspot-map' },
+    { icon: AlertTriangle, label: 'Accident Monitor',    path: '/accident-monitoring', badge: 'IRAD' },
+    { icon: RouteIcon,     label: 'AI Patrol Routes',    path: '/patrol-routes' },
+    { icon: Brain,         label: 'Crime Prediction',    path: '/crime-prediction', badge: 'ML' },
   ];
+
 
   const citizenMenu = [
     { icon: MapIcon, label: 'Safety Map', path: '/safety-map' },
@@ -25,13 +29,16 @@ const Sidebar = () => {
   ];
 
   const adminMenu = [
-    { icon: Users, label: 'Admin Overview', path: '/admin' },
-    { icon: Activity, label: 'Analytics & AI', path: '/admin' },
-    { icon: MapIcon, label: 'Hotspot Map', path: '/hotspot-map' },
-    { icon: Bell, label: 'SOS Alerts', path: '/alerts' },
-    { icon: FileText, label: 'FIR Reports', path: '/fir-management' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Users,         label: 'Admin Overview',      path: '/admin' },
+    { icon: Activity,      label: 'Analytics & AI',      path: '/admin' },
+    { icon: AlertTriangle, label: 'Accident Monitor',    path: '/accident-monitoring', badge: 'IRAD' },
+    { icon: MapIcon,       label: 'Hotspot Map',         path: '/hotspot-map' },
+    { icon: Brain,         label: 'Crime Prediction',    path: '/crime-prediction', badge: 'ML' },
+    { icon: Bell,          label: 'SOS Alerts',          path: '/alerts' },
+    { icon: FileText,      label: 'FIR Reports',         path: '/fir-management' },
+    { icon: Settings,      label: 'Settings',            path: '/settings' },
   ];
+
 
   const menuItems =
     user?.role === 'citizen' ? citizenMenu :
@@ -114,18 +121,18 @@ const Sidebar = () => {
               })}
             >
               {({ isActive }) => (
-                <>
+                 <>
                   <item.icon size={20} color={isActive ? 'white' : 'var(--text-secondary)'} />
                   <span>{item.label}</span>
-                  {item.label === 'SOS Alerts' && (
-                    <span style={{
-                      marginLeft: 'auto', width: '18px', height: '18px', borderRadius: '50%',
-                      background: '#FF4D4F', fontSize: '10px', fontWeight: '800', color: 'white',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: '0 0 8px rgba(255,77,79,0.5)'
-                    }}>2</span>
+                  {item.badge && (
+                    <span style={{ marginLeft: 'auto', padding: '1px 7px', borderRadius: '6px', background: '#A855F7', fontSize: '0.55rem', fontWeight: '900', color: 'white', letterSpacing: '0.5px' }}>
+                      {item.badge}
+                    </span>
                   )}
-                </>
+                  {item.label === 'SOS Alerts' && (
+                    <span style={{ marginLeft: item.badge ? '4px' : 'auto', width: '18px', height: '18px', borderRadius: '50%', background: '#FF4D4F', fontSize: '10px', fontWeight: '800', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 8px rgba(255,77,79,0.5)' }}>2</span>
+                  )}
+                 </>
               )}
             </NavLink>
           </motion.div>

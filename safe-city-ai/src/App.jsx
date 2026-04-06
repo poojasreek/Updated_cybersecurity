@@ -13,6 +13,9 @@ import AlertsPage from './pages/AlertsPage';
 import SettingsPage from './pages/SettingsPage';
 import WomenSafetyPage from './pages/WomenSafetyPage';
 import PatrolRoutePage from './pages/PatrolRoutePage';
+import CrimePredictionPage from './pages/CrimePredictionPage';
+import AccidentMonitoringPage from './pages/AccidentMonitoringPage';
+
 
 
 const AppContent = () => {
@@ -46,6 +49,12 @@ const AppContent = () => {
           <Route path="/fir-management" element={<FIRManagementPage />} />
           <Route path="/analytics" element={<PoliceDashboard />} />
           <Route path="/patrol-routes" element={<PatrolRoutePage />} />
+          <Route path="/crime-prediction" element={
+            user?.role !== 'citizen' ? <CrimePredictionPage /> : <Navigate to="/safety-map" replace />
+          } />
+          <Route path="/accident-monitoring" element={
+            user?.role !== 'citizen' ? <AccidentMonitoringPage /> : <Navigate to="/safety-map" replace />
+          } />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
 

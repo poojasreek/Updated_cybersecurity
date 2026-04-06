@@ -1,392 +1,368 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Shield, 
-  FileText, 
-  Users, 
-  Activity, 
-  TrendingUp, 
   Map as MapIcon, 
   AlertCircle,
-  Plus,
-  Filter,
-  Download,
-  MoreVertical,
-  ChevronRight,
   Clock,
-  MapPin
+  MapPin,
+  CarFront,
+  Navigation,
+  CheckCircle2,
+  Bell,
+  Loader2,
+  TrendingUp,
+  Database
 } from 'lucide-react';
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, BarChart, Bar, Legend
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { dashboardStats, firRecords, crimeTypes, statusTypes } from '../data/mockData';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import { dashboardStats, sosAlerts, crimeZones } from '../data/mockData';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Mock Patrol Units
+const activePatrols = [
+  { id: 'Unit-01', location: 'T. Nagar', status: 'Patrolling', officer: 'Kumar S.', distance: '1.2 km' },
+  { id: 'Unit-04', location: 'Anna Nagar', status: 'Responding', officer: 'Raj M.', distance: '3.4 km' },
+  { id: 'Unit-07', location: 'OMR Road', status: 'Available', officer: 'Anita R.', distance: '5.1 km' },
+  { id: 'Unit-12', location: 'Adyar', status: 'Patrolling', officer: 'Vikram T.', distance: '2.8 km' },
+];
+
 const PoliceDashboard = () => {
-  const [filterType, setFilterType] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [showAddFIR, setShowAddFIR] = useState(false);
+  const [timePeriod, setTimePeriod] = useState('daily');
+  const [realFirs, setRealFirs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredFIRs = firRecords.filter(f => 
-    (filterType === 'All' || f.crimeType === filterType) &&
-    (filterStatus === 'All' || f.status === filterStatus)
-  ).slice(0, 6); // Just show top 6 in dashboard
+  useEffect(() => {
+    const fetchRealRecords = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8888/api/firs');
+        const data = await response.json();
+        setRealFirs(data.data || []);
+      } catch (err) {
+        console.error("Dashboard failed to fetch live records:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchRealRecords();
+    const interval = setInterval(fetchRealRecords, 10000); // Polling for LIVE feeling
+    return () => clearInterval(interval);
+  }, []);
 
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("SAFE-CITY AI: FIR REPORT", 14, 15);
-    doc.autoTable({
-      head: [['FIR ID', 'Crime Type', 'Location', 'Date', 'Status']],
-      body: firRecords.map(f => [f.id, f.crimeType, f.location, f.date, f.status]),
-      startY: 20
+  // Process Live Data for Statistics
+  const processedChartData = useMemo(() => {
+    // Start with Baseline Mock Data
+    const baseline = JSON.parse(JSON.stringify(timePeriod === 'daily' ? dashboardStats.dailyCrimes 
+                   : timePeriod === 'weekly' ? [
+                       { day: 'Week 1', count: 85 }, { day: 'Week 2', count: 64 },
+                       { day: 'Week 3', count: 91 }, { day: 'Week 4', count: 72 }
+                     ]
+                   : dashboardStats.monthlyCrimes));
+
+    // Map real-time FIRs into the periods
+    realFirs.forEach(fir => {
+      const date = new Date(fir.timestamp || fir.Date_Time);
+      if (timePeriod === 'daily') {
+        const dayStr = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const target = baseline.find(d => d.day === dayStr);
+        if (target) target.count += 1;
+      } else if (timePeriod === 'monthly') {
+        const monthStr = date.toLocaleDateString('en-US', { month: 'short' });
+        const target = baseline.find(m => m.month === monthStr);
+        if (target) target.count += 1;
+      } else {
+        // Simple weekly logic for demo
+        baseline[baseline.length - 1].count += 1;
+      }
     });
-    doc.save("fir_report.pdf");
-  };
 
-  const StatCard = ({ title, value, icon: Icon, color, trend }) => (
-    <div className="glass-panel" style={{
-      padding: '24px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px',
-      minWidth: '200px',
-      flex: 1,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      <div style={{
-        position: 'absolute',
-        top: '-10px',
-        right: '-10px',
-        width: '60px',
-        height: '60px',
-        background: `radial-gradient(circle, ${color}33 0%, transparent 70%)`,
-        borderRadius: '50%'
-      }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-         <div style={{
-           width: '44px',
-           height: '44px',
-           borderRadius: '12px',
-           background: `${color}22`,
-           display: 'flex',
-           alignItems: 'center',
-           justifyContent: 'center',
-           border: `1px solid ${color}44`
-         }}>
-           <Icon size={24} color={color} />
-         </div>
-         <span style={{ 
-           fontSize: '0.75rem', 
-           fontWeight: '700', 
-           padding: '4px 8px', 
-           borderRadius: '6px', 
-           background: trend > 0 ? 'rgba(46, 204, 113, 0.1)' : 'rgba(255, 77, 79, 0.1)',
-           color: trend > 0 ? '#2ECC71' : '#FF4D4F',
-           display: 'flex',
-           alignItems: 'center',
-           gap: '4px'
-         }}>
-           {trend > 0 ? '+' : ''}{trend}%
-         </span>
-      </div>
-      <div>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>{title}</p>
-        <h3 style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>{value}</h3>
-      </div>
-    </div>
-  );
+    return baseline;
+  }, [realFirs, timePeriod]);
+
+  // Process Live Data for Hotspots
+  const dynamicHotspots = useMemo(() => {
+    const baselineZones = JSON.parse(JSON.stringify(crimeZones));
+    
+    // Increment frequencies based on FIR branch/location
+    realFirs.forEach(fir => {
+      const loc = fir.branch_name || fir.Police_Station || '';
+      const zone = baselineZones.find(z => loc.toLowerCase().includes(z.name.toLowerCase()));
+      if (zone) {
+        zone.crimeCount += 1;
+        zone.riskScore = Math.min(100, zone.riskScore + 5); // Increase risk per new incident
+      }
+    });
+
+    return baselineZones.filter(zone => zone.riskScore >= 60)
+                     .sort((a,b) => b.riskScore - a.riskScore)
+                     .slice(0, 4);
+  }, [realFirs]);
+
+  const xAxisKey = timePeriod === 'daily' ? 'day' : (timePeriod === 'weekly' ? 'day' : 'month');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       
-      {/* KPI Stats Section */}
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-        <StatCard title="Total FIRs" value={dashboardStats.totalFIRs} icon={FileText} color="#3A86FF" trend={12} />
-        <StatCard title="Open Cases" value={dashboardStats.openCases} icon={AlertCircle} color="#FFD60A" trend={-5} />
-        <StatCard title="Resolved" value={dashboardStats.resolvedCases} icon={Shield} color="#2ECC71" trend={18} />
-        <StatCard title="SOS Alerts" value={dashboardStats.sosAlerts} icon={Activity} color="#FF4D4F" trend={24} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+         <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontSize: '0.75rem', fontWeight: '800', marginBottom: '8px' }}>
+              <Shield size={14}/> COMMAND CENTER PROTOCOL v4.2
+            </div>
+            <h1 style={{ fontSize: '2rem', fontWeight: '900', letterSpacing: '-1px' }}>Strategic Operations</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Synchronized with <strong style={{ color: '#2ECC71' }}>Secure Ledger Database</strong></p>
+         </div>
+
+         {/* Total Registered Stat Tile */}
+         <div className="glass-panel" style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '20px', background: 'rgba(58, 134, 255, 0.05)', border: '1px solid rgba(58, 134, 255, 0.2)' }}>
+            <div style={{ padding: '10px', background: 'rgba(58, 134, 255, 0.15)', borderRadius: '12px' }}><Database size={20} color="var(--primary-color)" /></div>
+            <div>
+              <p style={{ fontSize: '0.65rem', fontWeight: '800', opacity: 0.6, letterSpacing: '1px' }}>TOTAL REGISTERED FIRs</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.4rem', fontWeight: '900' }}>{realFirs.length}</span>
+                <span style={{ fontSize: '0.75rem', color: '#2ECC71', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '2px' }}><TrendingUp size={14}/> +{realFirs.length > 0 ? 'Live' : '0'}</span>
+              </div>
+            </div>
+         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '24px' }}>
         
-        {/* Module 1: FIR Management Table */}
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-             <div>
-               <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '4px' }}>Recent FIR Records</h2>
-               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Status: Active Units in 4 Zones</p>
-             </div>
-             <div style={{ display: 'flex', gap: '12px' }}>
-                <select 
-                  value={filterType} 
-                  onChange={(e) => setFilterType(e.target.value)}
-                  style={{ 
-                    padding: '8px 12px', 
-                    borderRadius: '8px', 
-                    background: 'var(--panel-bg)', 
-                    color: 'white', 
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.85rem'
-                   }}
-                >
-                  {crimeTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-                <button onClick={exportPDF} style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  background: 'var(--panel-bg)',
-                  border: '1px solid var(--border-color)'
-                }}>
-                  <Download size={18} />
-                </button>
-                <button 
-                  onClick={() => setShowAddFIR(true)}
-                  className="btn-primary" 
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px' }}
-                >
-                  <Plus size={18} /> FIR
-                </button>
-             </div>
-          </div>
-
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>ID / Type</th>
-                  <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Location</th>
-                  <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Date & Time</th>
-                  <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Status</th>
-                  <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredFIRs.map((fir, idx) => (
-                  <motion.tr 
-                    key={fir.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.3s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '16px' }}>
-                      <p style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '2px' }}>{fir.id}</p>
-                      <span style={{ 
-                        fontSize: '0.7rem', 
-                        padding: '2px 8px', 
-                        borderRadius: '4px', 
-                        background: fir.severity === 'high' ? 'rgba(255,77,79,0.1)' : 'rgba(58,134,255,0.1)',
-                        color: fir.severity === 'high' ? '#FF4D4F' : '#3A86FF',
-                        fontWeight: '700'
-                      }}>{fir.crimeType}</span>
-                    </td>
-                    <td style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <MapPin size={14} color="var(--text-secondary)" />
-                        <span style={{ fontSize: '0.85rem' }}>{fir.location}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '16px' }}>
-                      <div style={{ fontSize: '0.85rem' }}>{fir.date}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{fir.time}</div>
-                    </td>
-                    <td style={{ padding: '16px' }}>
-                      <span style={{ 
-                        fontSize: '0.8rem', 
-                        fontWeight: '600',
-                        color: fir.status === 'Resolved' ? '#2ECC71' : fir.status === 'Open' ? '#FFD60A' : '#3A86FF'
-                      }}>{fir.status}</span>
-                    </td>
-                    <td style={{ padding: '16px' }}>
-                       <button style={{ 
-                         padding: '4px', 
-                         borderRadius: '6px', 
-                         background: 'rgba(0,0,0,0.2)',
-                         border: '1px solid var(--border-color)',
-                         color: 'var(--text-secondary)'
-                       }}>
-                         <ChevronRight size={18} />
-                       </button>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          <button style={{
-            width: '100%',
-            padding: '12px',
-            marginTop: '16px',
-            background: 'rgba(58,134,255,0.05)',
-            borderRadius: '10px',
-            border: '1px dashed var(--primary-color)',
-            color: 'var(--primary-color)',
-            fontSize: '0.85rem',
-            fontWeight: '600'
-          }}>View All 156 Records</button>
-        </div>
-
-        {/* Charts & Map Preview */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          
-          {/* Crime Distribution Chart */}
-          <div className="glass-panel" style={{ padding: '24px' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '20px' }}>Crime Distribution</h2>
-            <div style={{ height: '220px', width: '100%' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={dashboardStats.crimeTypeDistribution}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {dashboardStats.crimeTypeDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ background: '#1C2541', border: '1px solid var(--border-color)', borderRadius: '8px' }}
-                    itemStyle={{ color: 'white' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+        {/* Crime Statistics (Dynamic) */}
+        <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          {isLoading && (
+            <div style={{ position: 'absolute', top: '12px', right: '12px' }}>
+              <Loader2 className="animate-spin" size={16} color="var(--primary-color)" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '16px' }}>
-              {dashboardStats.crimeTypeDistribution.map((d) => (
-                <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: d.color }} />
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{d.name}</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '700', marginLeft: 'auto' }}>{d.value}%</span>
-                </div>
-              ))}
+          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+            <div>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: '700' }}>Crime Analytics</h2>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Trend processing of ledger-verified incidents</p>
             </div>
-          </div>
-
-          {/* Real-time SOS Alerts */}
-          <div className="glass-panel" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-               <h2 style={{ fontSize: '1rem', fontWeight: '700' }}>Active SOS Alerts</h2>
-               <span style={{ 
-                 padding: '2px 8px', 
-                 background: 'rgba(255,77,79,0.1)', 
-                 color: '#FF4D4F', 
-                 borderRadius: '4px', 
-                 fontSize: '0.7rem', 
-                 fontWeight: '700',
-                 animation: 'pulse 2s infinite'
-               }}>LIVE</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-               {[{ id: 101, area: 'Anna Nagar', time: '2m', type: 'Panic' }, { id: 102, area: 'T. Nagar', time: '5m', type: 'Medical' }].map(sos => (
-                 <div key={sos.id} style={{
-                   padding: '12px',
-                   background: 'rgba(255,77,79,0.05)',
-                   borderRadius: '12px',
-                   border: '1px solid rgba(255,77,79,0.1)',
-                   display: 'flex',
-                   alignItems: 'center',
-                   gap: '12px'
-                 }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: 'rgba(255,77,79,0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Shield size={20} color="#FF4D4F" />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: '0.85rem', fontWeight: '700' }}>{sos.area} - {sos.type}</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Clock size={12} color="var(--text-secondary)" />
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Received {sos.time} ago</span>
-                      </div>
-                    </div>
-                    <button style={{
-                       marginLeft: 'auto',
-                       padding: '6px 12px',
-                       borderRadius: '8px',
-                       background: '#FF4D4F',
-                       color: 'white',
-                       fontSize: '0.75rem',
-                       fontWeight: '700'
-                    }}>Deploy</button>
-                 </div>
+            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '4px' }}>
+               {['daily', 'weekly', 'monthly'].map(period => (
+                 <button 
+                   key={period}
+                   onClick={() => setTimePeriod(period)}
+                   style={{ 
+                     padding: '6px 14px', 
+                     borderRadius: '6px', 
+                     background: timePeriod === period ? 'var(--panel-bg)' : 'transparent', 
+                     border: timePeriod === period ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                     color: timePeriod === period ? 'white' : 'var(--text-secondary)',
+                     fontSize: '0.75rem', 
+                     fontWeight: '700',
+                     textTransform: 'uppercase',
+                     cursor: 'pointer',
+                     transition: 'all 0.2s',
+                     letterSpacing: '1px'
+                   }}>
+                     {period}
+                 </button>
                ))}
             </div>
           </div>
-
-        </div>
-      </div>
-
-      {/* Module 2: Crime Trends Area Chart */}
-      <div className="glass-panel" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: '700' }}>Week / Month Trend Analysis</h2>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Aggregated data from all active surveillance nodes</p>
+          <div style={{ height: '300px', width: '100%', marginTop: 'auto' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={processedChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorCrime" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey={xAxisKey} axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
+                <Tooltip 
+                  contentStyle={{ background: 'rgba(11, 19, 43, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(20px)', boxShadow: '0 10px 20px rgba(0,0,0,0.5)' }}
+                  itemStyle={{ color: 'white', fontSize: '0.8rem', fontWeight: '700' }}
+                  cursor={{ stroke: 'white', strokeWidth: 1, strokeDasharray: '3 3' }}
+                />
+                <Area type="monotone" dataKey="count" stroke="#8B5CF6" strokeWidth={4} fillOpacity={1} fill="url(#colorCrime)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', padding: '4px' }}>
-             <button style={{ padding: '6px 16px', borderRadius: '6px', background: 'var(--panel-bg)', fontSize: '0.8rem', fontWeight: '600' }}>Week</button>
-             <button style={{ padding: '6px 16px', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Month</button>
+        </div>
+
+        {/* Hotspot Areas (Dynamic) */}
+        <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+             <h2 style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <MapIcon size={20} color="#FF4D4F" /> High-Risk zones
+             </h2>
+             <button style={{ 
+               fontSize: '0.65rem', color: 'black', background: '#FFD60A', border: 'none', 
+               cursor: 'pointer', fontWeight: '900', padding: '8px 16px', borderRadius: '12px', letterSpacing: '1px'
+             }}>
+               ALERT CITIZENS
+             </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
+             <AnimatePresence>
+               {dynamicHotspots.map((zone, idx) => (
+                 <motion.div 
+                   key={zone.id}
+                   initial={{ opacity: 0, x: 20 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, x: -20 }}
+                   layout
+                   transition={{ delay: idx * 0.05 }}
+                   style={{ 
+                     padding: '16px', 
+                     background: 'rgba(255, 77, 79, 0.03)', 
+                     borderRadius: '16px',
+                     border: '1px solid rgba(255, 77, 79, 0.1)',
+                     borderLeft: `5px solid ${zone.riskScore > 80 ? '#FF4D4F' : '#FFD60A'}`,
+                     display: 'flex',
+                     justifyContent: 'space-between',
+                     alignItems: 'center'
+                   }}
+                 >
+                   <div>
+                     <h3 style={{ fontSize: '0.95rem', fontWeight: '800', marginBottom: '4px' }}>{zone.name}</h3>
+                     <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}><AlertCircle size={12}/> {zone.crimeCount} INFRACTIONS</span>
+                       <span style={{ fontWeight: '600' }}>DOMINANT: {zone.dominantCrime.toUpperCase()}</span>
+                     </div>
+                   </div>
+                   <div style={{ 
+                     width: '44px', height: '44px', borderRadius: '12px', 
+                     background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                     fontWeight: '900', color: zone.riskScore > 80 ? '#FF4D4F' : '#FFD60A',
+                     border: `1px solid ${zone.riskScore > 80 ? 'rgba(255,77,79,0.3)' : 'rgba(255,214,10,0.3)'}`
+                   }}>
+                     {zone.riskScore}
+                   </div>
+                 </motion.div>
+               ))}
+             </AnimatePresence>
           </div>
         </div>
-        <div style={{ height: '300px', width: '100%' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={dashboardStats.dailyCrimes}>
-              <defs>
-                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3A86FF" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3A86FF" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
-              <Tooltip 
-                contentStyle={{ background: '#1C2541', border: '1px solid var(--border-color)', borderRadius: '12px' }}
-                itemStyle={{ color: 'white' }}
-              />
-              <Area type="monotone" dataKey="count" stroke="#3A86FF" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      
-      {/* 3D Visual Floating Card Effect for Stats Overview */}
-      <div style={{ display: 'flex', gap: '20px' }}>
-         {['Active Patrols', 'Nodes Online', 'Blockchain Hash'].map((label, idx) => (
-           <motion.div 
-             key={label}
-             whileHover={{ y: -5, rotateX: 2, rotateY: 2 }}
-             className="glass-panel" 
-             style={{ 
-               flex: 1, 
-               padding: '20px', 
-               background: 'linear-gradient(135deg, rgba(58,134,255,0.05) 0%, rgba(28,37,65,0.5) 100%)',
-               textAlign: 'center',
-               transform: 'perspective(1000px)'
-             }}
-           >
-             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>{label}</p>
-             <h4 style={{ fontSize: '1.2rem', fontWeight: '700' }}>{idx === 0 ? '12/15' : idx === 1 ? '1,248' : '0x8f2...ae4'}</h4>
-           </motion.div>
-         ))}
-      </div>
 
+        {/* SOS Feed */}
+        <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+             <h2 style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <Bell size={20} color="#FFD60A" /> Active Emergency Feed
+             </h2>
+             <span style={{ 
+               padding: '4px 10px', 
+               background: 'rgba(255,77,79,0.15)', 
+               color: '#FF4D4F', 
+               borderRadius: '8px', 
+               fontSize: '0.65rem', 
+               fontWeight: '900',
+               letterSpacing: '1px'
+             }}>LOCATING...</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+             {sosAlerts.slice(0,4).map((sos, idx) => (
+                <motion.div 
+                  key={sos.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{
+                    padding: '16px',
+                    background: 'rgba(255,255,255,0.02)',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px'
+                  }}
+                >
+                   <div style={{
+                     width: '48px',
+                     height: '48px',
+                     borderRadius: '14px',
+                     background: sos.status === 'active' ? 'rgba(255,77,79,0.15)' : 'rgba(58,134,255,0.15)',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center'
+                   }}>
+                     <Shield size={24} color={sos.status === 'active' ? "#FF4D4F" : "#3A86FF"} />
+                   </div>
+                   <div style={{ flex: 1 }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                       <span style={{ fontSize: '0.9rem', fontWeight: '800' }}>{sos.type.toUpperCase()} ALERT</span>
+                       <span style={{ fontSize: '0.65rem', color: sos.status === 'active' ? '#FF4D4F' : '#3A86FF', fontWeight: '900', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '4px' }}>{sos.status.toUpperCase()}</span>
+                     </div>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> {sos.location}</span>
+                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {sos.time}</span>
+                     </div>
+                   </div>
+                </motion.div>
+             ))}
+          </div>
+        </div>
+
+        {/* Patrol Logistics */}
+        <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+             <h2 style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <CarFront size={20} color="#3A86FF" /> Patrol Asset Management
+             </h2>
+             <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '700' }}>DEPLOYED: {activePatrols.length}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+             {activePatrols.map((unit, idx) => (
+               <motion.div 
+                 key={unit.id}
+                 initial={{ opacity: 0, scale: 0.98 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 style={{ 
+                   padding: '16px', 
+                   background: 'rgba(255,255,255,0.02)', 
+                   borderRadius: '16px',
+                   border: '1px solid rgba(255,255,255,0.05)',
+                   display: 'grid',
+                   gridTemplateColumns: 'auto 1fr auto',
+                   alignItems: 'center',
+                   gap: '16px'
+                 }}
+               >
+                 <div style={{
+                   width: '40px', height: '40px', borderRadius: '12px', 
+                   background: 'rgba(58,134,255,0.1)',
+                   display: 'flex', alignItems: 'center', justifyContent: 'center'
+                 }}>
+                   <CarFront size={20} color="#3A86FF" />
+                 </div>
+                 
+                 <div>
+                   <h3 style={{ fontSize: '0.9rem', fontWeight: '800', marginBottom: '4px' }}>{unit.id} <span style={{ opacity: 0.4 }}>•</span> {unit.officer}</h3>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                     <Navigation size={12} /> {unit.location}
+                   </div>
+                 </div>
+
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                   <span style={{ 
+                     padding: '4px 12px', 
+                     borderRadius: '6px', 
+                     fontSize: '0.65rem', 
+                     fontWeight: '900',
+                     background: unit.status === 'Responding' ? 'rgba(255,77,79,0.1)' 
+                                : unit.status === 'Available' ? 'rgba(46,204,113,0.1)' 
+                                : 'rgba(255,214,10,0.1)',
+                     color: unit.status === 'Responding' ? '#FF4D4F' 
+                          : unit.status === 'Available' ? '#2ECC71' 
+                          : '#FFD60A'
+                   }}>
+                     {unit.status.toUpperCase()}
+                   </span>
+                 </div>
+               </motion.div>
+             ))}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };
 
 export default PoliceDashboard;
+;
