@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Camera, Video, UploadCloud, MapPin, AlertCircle, 
-  ShieldCheck, ShieldOff, CheckCircle2, FileVideo, Image as ImageIcon, X
+  ShieldCheck, ShieldOff, CheckCircle2, FileVideo, Image as ImageIcon, X, Activity
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
