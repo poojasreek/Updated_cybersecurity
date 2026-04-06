@@ -1,99 +1,62 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
-  User, Activity, ShieldAlert, BrainCircuit, AlertTriangle, 
-  CheckCircle, ListChecks, HeartHandshake, Scale, ShieldCheck, 
-  MapPin, Clock, FileText, Fingerprint
+  User, Activity, BrainCircuit, Search, 
+  FileText, Fingerprint
 } from 'lucide-react';
-
-// Mock data for behavioral analysis
-const offenderRecords = [
-  {
-    id: 'OFF-1042',
-    name: 'Rajesh Kumar',
-    age: 24,
-    history: ['Petty Theft (2023)', 'Shoplifting (2024)', 'Vandalism (2025)'],
-    frequency: 'Increasing (3 incidents in 2 years)',
-    pattern: 'Opportunistic property crimes in commercial zones during evening hours.',
-    riskScore: 68,
-    riskLevel: 'Medium',
-    biasScore: 98, // 98% fair
-    recommendations: [
-      { type: 'Rehabilitation', desc: 'Mandatory vocational training program (6 months).' },
-      { type: 'Community Monitoring', desc: 'Weekly check-ins with assigned community officer.' },
-      { type: 'Restorative Justice', desc: 'Community service (120 hours) in affected commercial areas.' }
-    ]
-  },
-  {
-    id: 'OFF-2199',
-    name: 'Vikram Singh',
-    age: 35,
-    history: ['Assault (2020)', 'Aggravated Assault (2022)', 'Armed Robbery (2024)'],
-    frequency: 'Escalating severity',
-    pattern: 'Violent offenses primarily late at night in isolated areas.',
-    riskScore: 89,
-    riskLevel: 'High',
-    biasScore: 96,
-    recommendations: [
-      { type: 'Correctional Facility', desc: 'Traditional imprisonment required due to public safety risk.' },
-      { type: 'Psychiatric Eval', desc: 'Mandatory behavioral and anger management evaluation.' },
-      { type: 'Strict Monitoring', desc: 'Electronic ankle monitoring post-release.' }
-    ]
-  },
-  {
-    id: 'OFF-0831',
-    name: 'Arun Prakash',
-    age: 19,
-    history: ['Cyber Harassment (2025)'],
-    frequency: 'First-time offense',
-    pattern: 'Online harassment related to peer disputes.',
-    riskScore: 24,
-    riskLevel: 'Low',
-    biasScore: 99,
-    recommendations: [
-      { type: 'Counseling', desc: 'Digital ethics and empathy counseling (8 sessions).' },
-      { type: 'Warning', desc: 'Formal youth caution.' },
-      { type: 'Digital Monitoring', desc: 'Restrictions and monitoring of social media usage.' }
-    ]
-  },
-  {
-    id: 'OFF-3412',
-    name: 'Deepa Krishnan',
-    age: 28,
-    history: ['Substance Possession (2022)', 'Substance Possession (2024)'],
-    frequency: 'Repeated non-violent',
-    pattern: 'Substance abuse related incidents, no indication of distribution.',
-    riskScore: 45,
-    riskLevel: 'Medium',
-    biasScore: 97,
-    recommendations: [
-      { type: 'Rehabilitation', desc: 'In-patient drug rehabilitation facility (90 days).' },
-      { type: 'Support Group', desc: 'Mandatory attendance at community support groups.' },
-      { type: 'Alternative Sentencing', desc: 'Suspended sentence contingent on clean drug tests.' }
-    ]
-  }
-];
+import { offenderRecords } from '../data/mockData';
 
 const riskColor = { Low: '#2ECC71', Medium: '#FFD60A', High: '#FF4D4F' };
 
 export default function BehavioralAnalysisPage() {
   const [selectedOffender, setSelectedOffender] = useState(offenderRecords[0]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/crime-search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
-      {/* Header */}
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#A855F7', fontSize: '0.75rem', fontWeight: '800', marginBottom: '8px' }}>
-          <BrainCircuit size={14}/> AI PREDICTIVE JUSTICE MODULE
+      {/* Header with Search */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#A855F7', fontSize: '0.75rem', fontWeight: '800', marginBottom: '8px' }}>
+            <BrainCircuit size={14}/> AI PREDICTIVE JUSTICE MODULE
+          </div>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: '900', letterSpacing: '-0.5px', margin: '0 0 4px' }}>Behavioral Risk Analysis</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+            Predicting recidivism and identifying behavioral patterns.
+          </p>
         </div>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '900', letterSpacing: '-0.5px', margin: '0 0 4px' }}>Behavioral Risk Analysis</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-          Predicting recidivism and recommending ethical alternatives to imprisonment using behavioral AI.
-        </p>
+
+        {/* Global Crime Search Input */}
+        <form onSubmit={handleSearch} style={{ position: 'relative', width: '300px' }}>
+          <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+          <input 
+            type="text" 
+            placeholder="Search crime (e.g. Theft, Assault)..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ 
+              width: '100%', padding: '12px 16px 12px 44px', borderRadius: '12px',
+              border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.3)',
+              color: 'white', outline: 'none', fontSize: '0.9rem', transition: 'border-color 0.3s'
+            }}
+            onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
+            onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+          />
+          <button type="submit" style={{ display: 'none' }}>Search</button>
+        </form>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(400px, 2fr)', gap: '24px', alignItems: 'start' }}>
         
         {/* Left Column: Offender Records */}
         <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
@@ -171,7 +134,7 @@ export default function BehavioralAnalysisPage() {
               </div>
 
               {/* Behavioral Pattern Analysis */}
-              <div style={{ marginTop: '30px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '20px' }}>
+              <div style={{ marginTop: '30px', display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px' }}>
                   <h4 style={{ fontSize: '0.85rem', fontWeight: '800', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)' }}>
                     <FileText size={16}/> Crime History & Frequency
@@ -197,9 +160,6 @@ export default function BehavioralAnalysisPage() {
               </div>
             </motion.div>
           </AnimatePresence>
-
-
-
         </div>
       </div>
     </div>
