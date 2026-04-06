@@ -172,9 +172,22 @@ def get_sos(db: Session = Depends(get_db)):
     return {"data": alerts}
 
 import hashlib
+import json
+
+active_police_connections: List[WebSocket] = []
+
+@app.websocket("/ws/police/alerts")
+async def police_alerts_ws(websocket: WebSocket):
+    await websocket.accept()
+    active_police_connections.append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        active_police_connections.remove(websocket)
 
 @app.post("/api/sos/trigger")
-def trigger_sos(req: SOSTrigger, db: Session = Depends(get_db)):
+async def trigger_sos(req: SOSTrigger, db: Session = Depends(get_db)):
     data_string = f"{req.lat}-{req.lng}-{datetime.datetime.utcnow().isoformat()}"
     mock_hash = hashlib.sha256(data_string.encode()).hexdigest()
     
@@ -185,13 +198,30 @@ def trigger_sos(req: SOSTrigger, db: Session = Depends(get_db)):
         lng=req.lng,
         media_url=req.mediaUrl,
         blockchain_hash=mock_hash,
-        status="critical"
+        status="active"
     )
     db.add(new_sos)
     db.commit()
     db.refresh(new_sos)
     
     print(f"🚨 [MOCK FIREBASE/TWILIO] SOS Triggered! ID: {new_sos.id} | Hash: {mock_hash}")
+    
+    # Broadcast to Police Command Center
+    alert_payload = {
+        "id": new_sos.id, 
+        "type": new_sos.type, 
+        "lat": new_sos.lat, 
+        "lng": new_sos.lng, 
+        "status": "active", 
+        "time": "Just now", 
+        "location": new_sos.location
+    }
+    for connection in active_police_connections:
+        try:
+            await connection.send_json(alert_payload)
+        except Exception as e:
+            pass
+            
     return {"status": "success", "data": {"id": new_sos.id, "hash": mock_hash}}
 
 active_connections: List[WebSocket] = []

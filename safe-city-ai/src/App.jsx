@@ -15,8 +15,10 @@ import WomenSafetyPage from './pages/WomenSafetyPage';
 import PatrolRoutePage from './pages/PatrolRoutePage';
 import CrimePredictionPage from './pages/CrimePredictionPage';
 import AccidentMonitoringPage from './pages/AccidentMonitoringPage';
-
-
+import RiskAnalysisPage from './pages/RiskAnalysisPage';
+import SafetyMapPage from './pages/SafetyMapPage';
+import NearbyStationsPage from './pages/NearbyStationsPage';
+import { SOSProvider } from './context/SOSContext';
 
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
@@ -55,13 +57,15 @@ const AppContent = () => {
           <Route path="/accident-monitoring" element={
             user?.role !== 'citizen' ? <AccidentMonitoringPage /> : <Navigate to="/safety-map" replace />
           } />
+          <Route path="/risk-analysis" element={
+            user?.role !== 'citizen' ? <RiskAnalysisPage /> : <Navigate to="/safety-map" replace />
+          } />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
 
           {/* Citizen Routes */}
-          <Route path="/safety-map" element={
-            user?.role === 'citizen' ? <CitizenDashboard /> : <Navigate to="/dashboard" replace />
-          } />
+          <Route path="/safety-map" element={<SafetyMapPage />} />
+          <Route path="/nearby-stations" element={<NearbyStationsPage />} />
           <Route path="/sos" element={
             user?.role === 'citizen' ? <WomenSafetyPage /> : <Navigate to="/dashboard" replace />
           } />
@@ -86,7 +90,9 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppContent />
+        <SOSProvider>
+          <AppContent />
+        </SOSProvider>
       </AuthProvider>
     </ThemeProvider>
   );

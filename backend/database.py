@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# PostgreSQL + PostGIS Connection URL from .env
+# PostgreSQL + PostGIS Connection URL from .env (overrides fallback)
 # Example: postgresql://user:password@localhost:5432/dbname
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./safecity_v2.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./safecity_v4.db")
 
 # To support PostGIS, PostgreSQL is required. 
 # For SQLite, it will fallback to simple columns.

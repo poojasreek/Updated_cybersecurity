@@ -104,3 +104,8 @@ export const accidentStats = {
     { hour: '16-20', count: 55 }, { hour: '20-00', count: 20 },
   ],
 };
+
+export const emergencyContacts = [
+  { id: 1, name: 'Arun Kumar', relation: 'Father', phone: '+91 98765 43210' },
+  { id: 2, name: 'Priya Raj', relation: 'Sister', phone: '+91 98765 43211' },
+];
