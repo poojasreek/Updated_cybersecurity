@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, User, Settings, Lock, Mail, Phone, ChevronRight, Loader2, MapPin, Smartphone, SmartphoneNfc } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const LoginPage = () => {
   const [role, setRole] = useState('police');
@@ -12,6 +13,9 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [securityContext, setSecurityContext] = useState(null); // 'mfa' or 'otp'
+  const [setupMfa, setSetupMfa] = useState(false);
+  const [otpauthUrl, setOtpauthUrl] = useState('');
+  const [totpSecret, setTotpSecret] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,6 +37,11 @@ const LoginPage = () => {
         const response = await login(credentials);
 
         if (response.needs_mfa) {
+          if (response.setup_mfa) {
+            setSetupMfa(true);
+            setOtpauthUrl(response.otpauth_url);
+            setTotpSecret(response.secret);
+          }
           setSecurityContext('mfa');
           setLoading(false);
         } else if (response.needs_otp) {
@@ -88,7 +97,7 @@ const LoginPage = () => {
 
         <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '4px', marginBottom: '32px', border: '1px solid var(--border-color)' }}>
           {roles.map((r) => (
-            <button key={r.id} type="button" onClick={() => { setRole(r.id); setSecurityContext(null); setOtp(''); }}
+            <button key={r.id} type="button" onClick={() => { setRole(r.id); setSecurityContext(null); setOtp(''); setSetupMfa(false); }}
               style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 4px', borderRadius: '10px', background: role === r.id ? 'var(--panel-bg)' : 'transparent', color: role === r.id ? 'var(--text-primary)' : 'var(--text-secondary)', border: 'none', transition: 'all 0.2s', cursor: 'pointer' }}
             >
               <r.icon size={18} style={{ marginBottom: '4px', color: role === r.id ? r.color : 'inherit' }} />
@@ -140,10 +149,19 @@ const LoginPage = () => {
               <motion.div key="mfa" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center' }}>
                 <Smartphone size={48} color="var(--primary-color)" style={{ marginBottom: '16px' }} />
                 <h3 style={{ marginBottom: '8px', fontWeight: '800' }}>Google Authenticator</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '24px' }}>Please enter the 6-digit TOTP code from your mobile device.</p>
+                {setupMfa ? (
+                   <>
+                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Scan the QR code below in your Authenticator app.</p>
+                     <div style={{ background: 'white', padding: '16px', borderRadius: '12px', display: 'inline-block', marginBottom: '16px' }}>
+                       <QRCodeSVG value={otpauthUrl} size={150} />
+                     </div>
+                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '16px', wordBreak: 'break-all' }}>Secret: <strong>{totpSecret}</strong></p>
+                   </>
+                ) : (
+                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '24px' }}>Please enter the 6-digit TOTP code from your mobile device.</p>
+                )}
                 <input required type="text" maxLength="6" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} style={{ width: '100%', maxWidth: '260px', padding: '16px', textAlign: 'center', fontSize: '2.5rem', fontWeight: '800', letterSpacing: '8px', background: 'rgba(0,0,0,0.4)', border: '2px solid var(--primary-color)', borderRadius: '16px', color: 'white', outline: 'none' }} placeholder="      " />
-                <div style={{ marginTop: '20px', fontSize: '0.75rem', opacity: 0.3 }}>Secret: JBSWY3DPEHPK3PXP</div>
-                <button type="button" onClick={() => setSecurityContext(null)} style={{ display: 'block', margin: '20px auto 0', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline' }}>Back to Secure Entry</button>
+                <button type="button" onClick={() => { setSecurityContext(null); setSetupMfa(false); }} style={{ display: 'block', margin: '20px auto 0', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline' }}>Back to Secure Entry</button>
               </motion.div>
             ) : (
               <motion.div key="otp" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center' }}>

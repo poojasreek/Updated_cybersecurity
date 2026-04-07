@@ -301,6 +301,16 @@ export default function WomenSafetyPage() {
               • All {contacts.length} contacts notified via alert
             </p>
           </div>
+
+          <div style={{ background: 'rgba(255,77,79,0.08)', borderRadius: '10px', padding: '12px 14px', border: '1px solid rgba(255,77,79,0.25)' }}>
+            <p style={{ margin: 0, fontWeight: '700', color: '#FF4D4F', fontSize: '0.78rem' }}>Disclaimer: This app is for emergency use only.</p>
+            <p style={{ margin: '8px 0 0', fontSize: '0.73rem', lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+              Misuse (false SOS alerts) may lead to legal action, including fines or imprisonment.
+            </p>
+            <p style={{ margin: '8px 0 0', fontSize: '0.73rem', lineHeight: 1.5, color: 'var(--text-secondary)', fontWeight: '600' }}>
+              Use responsibly.
+            </p>
+          </div>
         </div>
       </div>
     </div>

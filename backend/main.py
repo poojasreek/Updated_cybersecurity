@@ -62,6 +62,8 @@ class VerifyRequest(BaseModel):
     email: Optional[str] = None
     code: str
     role: str
+    officer_name: Optional[str] = None
+    branch_name: Optional[str] = None
 
 class FIRCreate(BaseModel):
     crimeType: str
@@ -86,7 +88,33 @@ def read_root():
 @app.post("/auth/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)):
     if req.role == 'police': 
-        return {"status": "success", "needs_mfa": True, "role": "police"}
+        # Find or create user
+        user = db.query(models.User).filter(models.User.name == req.officer_name, models.User.role == 'police').first()
+        if not user:
+            user = models.User(name=req.officer_name, role="police", hashed_password="mock_password")
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        setup_mfa = False
+        secret = None
+        otpauth_url = None
+
+        if not user.is_2fa_enabled or not user.two_fa_secret:
+            setup_mfa = True
+            secret = pyotp.random_base32()
+            user.two_fa_secret = secret
+            db.commit()
+            otpauth_url = pyotp.totp.TOTP(secret).provisioning_uri(name=req.officer_name, issuer_name="SafeCity AI")
+
+        return {
+            "status": "success", 
+            "needs_mfa": True, 
+            "role": "police", 
+            "setup_mfa": setup_mfa, 
+            "secret": secret, 
+            "otpauth_url": otpauth_url
+        }
     if req.role == 'citizen':
         # For hackathon: skip password check, OTP is the real auth factor
         otp = "445566"
@@ -98,9 +126,16 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
 @app.post("/auth/verify-security")
 def verify_security(req: VerifyRequest, db: Session = Depends(get_db)):
     if req.role == 'police':
-        totp = pyotp.TOTP(POLICE_MFA_SECRET)
-        if totp.verify(req.code) or req.code == "123456":
-            return {"token": "secure_mfa_token", "role": "police"}
+        user = db.query(models.User).filter(models.User.name == req.officer_name, models.User.role == 'police').first()
+        if not user or not user.two_fa_secret:
+            raise HTTPException(status_code=401, detail="User MFA not setup")
+            
+        totp = pyotp.TOTP(user.two_fa_secret)
+        if totp.verify(req.code):
+            if not user.is_2fa_enabled:
+                user.is_2fa_enabled = True
+                db.commit()
+            return {"token": "secure_mfa_token", "role": "police", "userId": user.id}
         raise HTTPException(status_code=401, detail="Invalid MFA Code")
     if req.role == 'citizen':
         if req.code == "445566" or citizen_otp_store.get(req.email) == req.code:
@@ -432,6 +467,34 @@ def admin_health(db: Session = Depends(get_db)):
         "model_lstm":    {"status": "active", "accuracy": 87},
         "model_xgboost": {"status": "active", "accuracy": 82},
     }
+
+@app.get("/admin/users")
+def get_all_users(db: Session = Depends(get_db)):
+    """Return all police officers and citizens with their details."""
+    users = db.query(models.User).all()
+    result = []
+    for u in users:
+        result.append({
+            "id":              u.id,
+            "name":            u.name or "—",
+            "email":           u.email or "—",
+            "phone":           u.phone or "—",
+            "role":            u.role,
+            "is_active":       u.is_active,
+            "is_2fa_enabled":  u.is_2fa_enabled,
+        })
+    return {"data": result}
+
+@app.delete("/admin/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    """Delete a user by ID."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"status": "success", "message": f"User {user_id} deleted"}
+
 
 @app.post("/admin/retrain")
 def admin_retrain():

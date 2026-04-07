@@ -1,8 +1,9 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Map as MapIcon, FileText, Activity,
-  Bell, Settings, LogOut, Shield, User, Users, Route as RouteIcon, Brain, AlertTriangle, Fingerprint, ShieldAlert
+  FileText, Activity,
+  Settings, LogOut, Shield, User, Users, Route as RouteIcon,
+  Bell, Brain, AlertTriangle, MapIcon, Fingerprint, ShieldAlert
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -34,15 +35,9 @@ const Sidebar = () => {
   ];
 
   const adminMenu = [
-    { icon: Users,         label: 'Admin Overview',      path: '/admin' },
-    { icon: Activity,      label: 'Analytics & AI',      path: '/admin' },
-    { icon: AlertTriangle, label: 'Accident Monitor',    path: '/accident-monitoring', badge: 'IRAD' },
-    { icon: MapIcon,       label: 'Hotspot Map',         path: '/hotspot-map' },
-    { icon: Brain,         label: 'Crime Prediction',    path: '/crime-prediction', badge: 'ML' },
-    { icon: Fingerprint,   label: 'Behavioral Analysis', path: '/behavioral-analysis', badge: 'AI' },
-    { icon: Bell,          label: 'SOS Alerts',          path: '/alerts' },
-    { icon: FileText,      label: 'FIR Reports',         path: '/fir-management' },
-    { icon: Settings,      label: 'Settings',            path: '/settings' },
+    { icon: Users,    label: 'User Management',  path: '/admin' },
+    { icon: Activity, label: 'Data Monitoring',  path: '/admin' },
+    { icon: Settings, label: 'Settings',         path: '/settings' },
   ];
 
   const menuItems =
